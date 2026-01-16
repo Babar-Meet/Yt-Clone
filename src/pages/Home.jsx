@@ -48,9 +48,9 @@ const Home = () => {
   return (
     <div className="home-page">
       {/* Main Video Player */}
-      <div className="main-video-section">
-        {selectedVideo && <VideoPlayer video={selectedVideo} />}
-      </div>
+      {/* <div className="main-video-section"> */}
+        {/* {selectedVideo && <VideoPlayer video={selectedVideo} />} */}
+      {/* </div> */}
 
       {/* Video Library */}
       <div className="video-library-section">

@@ -52,7 +52,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: white;
+  color: rgb(240, 237, 237);
   font-weight: 500;
   font-size: 16px;
 }

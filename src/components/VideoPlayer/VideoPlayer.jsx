@@ -513,24 +513,36 @@ const VideoPlayer = ({ video = null }) => {
           onMouseEnter={() => isMouseOverControlsRef.current = true}
           onMouseLeave={() => isMouseOverControlsRef.current = false}
         >
-          <div className="top-controls">
+
+           <div className="top-controls">
             <div className="video-title">
               <h3>{videoTitle}</h3>
-              {tempSpeedActive && (
-                <div className="speed-indicator">
-                  <Zap size={14} />
-                  <span>2x Speed (Hold Space)</span>
-                </div>
-              )}
+              {tempSpeedActive
+              }
             </div>
           </div>
+
+
+          {/* <div className="top-controls">
+            <div className="video-title">
+              <h3>{videoTitle}</h3>
+              {tempSpeedActive &&
+               (
+                <div className="speed-indicator">
+                  <Zap size={14} />
+                  <span>2x </span>
+                </div>
+              )
+              }
+            </div>
+          </div> */}
 
           <div className="center-controls">
             <button 
               className={`big-play-button ${isPlaying ? 'playing' : ''}`} 
               onClick={togglePlay}
             >
-              {isPlaying ? <Pause size={42} /> : <Play size={42} />}
+              {isPlaying ? <Pause size={15} /> : <Play size={15} />}
             </button>
           </div>
 
@@ -559,16 +571,16 @@ const VideoPlayer = ({ video = null }) => {
             <div className="control-buttons">
               <div className="left-controls">
                 <button className="control-button" onClick={togglePlay}>
-                  {isPlaying ? <Pause size={22} /> : <Play size={22} />}
+                  {isPlaying ? <Pause size={15} /> : <Play size={15} />}
                 </button>
                 
                 <button className="control-button skip-button" onClick={() => skip(-10)}>
-                  <SkipBack size={22} />
+                  <SkipBack size={15} />
                   <span className="skip-time">10s</span>
                 </button>
                 
                 <button className="control-button skip-button" onClick={() => skip(10)}>
-                  <SkipForward size={22} />
+                  <SkipForward size={15} />
                   <span className="skip-time">10s</span>
                 </button>
 
@@ -578,7 +590,7 @@ const VideoPlayer = ({ video = null }) => {
                   onMouseLeave={() => setShowVolumeSlider(false)}
                 >
                   <button className="control-button" onClick={toggleMute}>
-                    {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
+                    {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
                   </button>
                   <div className={`volume-slider-container ${showVolumeSlider || isHovering ? 'show' : ''}`}>
                     <input
@@ -618,19 +630,19 @@ const VideoPlayer = ({ video = null }) => {
                 </div>
 
                 <button className="control-button" title="Subtitles">
-                  <Captions size={20} />
+                  <Captions size={15} />
                 </button>
 
                 <button className="control-button" title="Settings">
-                  <Settings size={20} />
+                  <Settings size={15} />
                 </button>
 
                 <button className="control-button" title="AirPlay">
-                  <Airplay size={20} />
+                  <Airplay size={15} />
                 </button>
 
                 <button className="control-button" onClick={toggleFullscreen} title="Fullscreen">
-                  {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
+                  {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}
                 </button>
               </div>
             </div>
@@ -648,7 +660,7 @@ const VideoPlayer = ({ video = null }) => {
         {/* Spacebar hint - only show when video is paused and controls are visible */}
         {!isPlaying && showControls && !tempSpeedActive && (
           <div className="spacebar-hint">
-            <kbd>Space</kbd> or <kbd>K</kbd> to play • Hold <kbd>Space</kbd> for 2x speed
+            <kbd>Space</kbd> for 2x speed
           </div>
         )}
         

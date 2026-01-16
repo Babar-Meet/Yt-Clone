@@ -96,9 +96,9 @@ const Watch = () => {
       <div className="watch-container">
         <div className="main-content">
           {/* Back Button */}
-          <button onClick={() => navigate(-1)} className="back-button">
-            <ArrowLeft size={20} /> Back
-          </button>
+          {/* <button onClick={() => navigate(-1)} className="back-button">
+            <ArrowLeft size={10} /> Back
+          </button> */}
 
           {/* Video Player */}
           <VideoPlayer video={video} />
@@ -125,7 +125,7 @@ const Watch = () => {
               </div>
             </div>
 
-            <div className="video-actions-bar">
+            {/* <div className="video-actions-bar">
               <button className="action-btn like">
                 <ThumbsUp size={18} /> Like
               </button>
@@ -144,7 +144,7 @@ const Watch = () => {
               <button className="action-btn more">
                 <MoreHorizontal size={18} />
               </button>
-            </div>
+            </div> */}
 
             <div className="video-description">
               <h3>Description</h3>
@@ -209,6 +209,7 @@ const Watch = () => {
                     </p>
                   </div>
                 </div>
+                
               ))}
             </div>
           ) : (
@@ -220,7 +221,7 @@ const Watch = () => {
             </div>
           )}
 
-          {/* Video File Info */}
+          {/* Video File Info
           <div className="video-file-info">
             <h4>File Information</h4>
             <div className="file-details">
@@ -247,7 +248,7 @@ const Watch = () => {
             >
               <ExternalLink size={16} /> Open Video File
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
