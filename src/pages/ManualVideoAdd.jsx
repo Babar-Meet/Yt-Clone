@@ -618,13 +618,15 @@ const ManualVideoAdd = () => {
                   <FolderOpen size={16} /> Category
                 </label>
                 <select id="category" {...register('category')}>
-                  <option value="gaming">🎮 Gaming</option>
-                  <option value="education">📚 Education</option>
-                  <option value="entertainment">🎭 Entertainment</option>
-                  <option value="music">🎵 Music</option>
-                  <option value="technology">💻 Technology</option>
-                  <option value="sports">⚽ Sports</option>
-                  <option value="other">📦 Other</option>
+                  <option value="Clash_Of_Clans">🎮 Clash_Of_Clans</option>
+                  <option value="Gaming">📚 Gaming</option>
+                  <option value="Enterterenment">🎭 Enterterenment</option>
+                  <option value="Music">🎵 Music</option>
+                  <option value="Tech">💻 Tech</option>
+                  <option value="Brain_Rot">Brain_Rot</option>
+                  <option value="Edigaction">Edigaction</option>
+                  <option value="Watch_later">Watch_later</option>
+                  <option value="other">Other 🤫</option>
                 </select>
               </div>
 
