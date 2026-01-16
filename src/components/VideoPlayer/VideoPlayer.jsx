@@ -3,13 +3,14 @@ import {
   Play, Pause, Volume2, VolumeX,
   Maximize, Minimize, SkipBack, SkipForward,
   Settings, Captions, Airplay, Zap, ThumbsUp, ThumbsDown,
-  Share2, Download, PlusCircle, MoreHorizontal
+  Share2, Download, PlusCircle, MoreHorizontal, Heart
 } from 'lucide-react';
 import './VideoPlayer.css';
 
 const VideoPlayer = ({ video = null }) => {
   const videoRef = useRef(null);
   const playerRef = useRef(null);
+  const containerRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
@@ -18,15 +19,19 @@ const VideoPlayer = ({ video = null }) => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  const [hideControlsTimeout, setHideControlsTimeout] = useState(null);
+  const [isHovering, setIsHovering] = useState(false);
   const [tempSpeedActive, setTempSpeedActive] = useState(false);
   const [originalPlaybackRate, setOriginalPlaybackRate] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showVolumeSlider, setShowVolumeSlider] = useState(false);
   
   // Use refs for real-time state tracking
   const isPlayingRef = useRef(false);
   const playbackRateRef = useRef(1);
   const spacebarHoldTimerRef = useRef(null);
   const spacebarPressedRef = useRef(false);
+  const hideControlsTimerRef = useRef(null);
+  const isMouseOverControlsRef = useRef(false);
 
   // Use video prop for dynamic video source
   const videoPath = video ? video.videoPath : "/videos/subnautica.mp4";
@@ -46,12 +51,14 @@ const VideoPlayer = ({ video = null }) => {
     if (!videoRef.current) return;
     
     if (videoRef.current.paused) {
-      videoRef.current.play();
-      isPlayingRef.current = true;
+      videoRef.current.play().then(() => {
+        isPlayingRef.current = true;
+      }).catch(console.error);
     } else {
       videoRef.current.pause();
       isPlayingRef.current = false;
     }
+    showControlsTemporarily();
   }, []);
 
   // Volume control
@@ -65,17 +72,20 @@ const VideoPlayer = ({ video = null }) => {
   };
 
   // Mute toggle
-  const toggleMute = () => {
+  const toggleMute = useCallback(() => {
     if (!videoRef.current) return;
     
     if (isMuted) {
-      videoRef.current.volume = volume || 0.8;
+      const newVolume = volume === 0 ? 0.8 : volume;
+      videoRef.current.volume = newVolume;
+      setVolume(newVolume);
       setIsMuted(false);
     } else {
       videoRef.current.volume = 0;
       setIsMuted(true);
     }
-  };
+    showControlsTemporarily();
+  }, [isMuted, volume]);
 
   // Seek
   const handleSeek = (e) => {
@@ -84,12 +94,14 @@ const VideoPlayer = ({ video = null }) => {
     if (videoRef.current) {
       videoRef.current.currentTime = time;
     }
+    showControlsTemporarily();
   };
 
   // Skip forward/backward
   const skip = useCallback((seconds) => {
     if (!videoRef.current) return;
     videoRef.current.currentTime += seconds;
+    showControlsTemporarily();
   }, []);
 
   // Playback speed
@@ -99,39 +111,35 @@ const VideoPlayer = ({ video = null }) => {
     if (videoRef.current && !tempSpeedActive) {
       videoRef.current.playbackRate = rate;
     }
+    showControlsTemporarily();
   }, [tempSpeedActive]);
 
   // Temporary speed boost (2x) while spacebar held
   const activateTempSpeed = useCallback(() => {
     if (!videoRef.current) return;
     
-    // Store original playback rate if not already stored
     if (!tempSpeedActive) {
       setOriginalPlaybackRate(playbackRateRef.current);
     }
     
-    // Play video if paused
     if (videoRef.current.paused) {
       videoRef.current.play();
     }
     
-    // Set to 2x speed
     videoRef.current.playbackRate = 2;
     setTempSpeedActive(true);
     playbackRateRef.current = 2;
     
   }, [tempSpeedActive]);
 
-  // Reset to normal speed
   const deactivateTempSpeed = useCallback(() => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !tempSpeedActive) return;
     
-    // Reset to original playback rate
     videoRef.current.playbackRate = originalPlaybackRate;
     setTempSpeedActive(false);
     playbackRateRef.current = originalPlaybackRate;
     
-  }, [originalPlaybackRate]);
+  }, [originalPlaybackRate, tempSpeedActive]);
 
   // Fullscreen
   const toggleFullscreen = () => {
@@ -147,7 +155,23 @@ const VideoPlayer = ({ video = null }) => {
       document.exitFullscreen();
       setIsFullscreen(false);
     }
+    showControlsTemporarily();
   };
+
+  // Show controls temporarily
+  const showControlsTemporarily = useCallback(() => {
+    setShowControls(true);
+    
+    if (hideControlsTimerRef.current) {
+      clearTimeout(hideControlsTimerRef.current);
+    }
+    
+    if (isPlayingRef.current) {
+      hideControlsTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+  }, []);
 
   // Handle video events
   useEffect(() => {
@@ -157,16 +181,19 @@ const VideoPlayer = ({ video = null }) => {
     const handlePlay = () => {
       setIsPlaying(true);
       isPlayingRef.current = true;
+      setIsLoading(false);
     };
     
     const handlePause = () => {
       setIsPlaying(false);
       isPlayingRef.current = false;
+      setShowControls(true); // Always show controls when paused
     };
     
     const handleLoadedMetadata = () => {
       setDuration(videoElement.duration);
       videoElement.playbackRate = playbackRateRef.current;
+      setIsLoading(false);
     };
     
     const handleTimeUpdate = () => {
@@ -176,55 +203,117 @@ const VideoPlayer = ({ video = null }) => {
     const handleEnded = () => {
       setIsPlaying(false);
       isPlayingRef.current = false;
+      setShowControls(true);
     };
+
+    const handleWaiting = () => setIsLoading(true);
+    const handleCanPlay = () => setIsLoading(false);
 
     videoElement.addEventListener('play', handlePlay);
     videoElement.addEventListener('pause', handlePause);
     videoElement.addEventListener('loadedmetadata', handleLoadedMetadata);
     videoElement.addEventListener('timeupdate', handleTimeUpdate);
     videoElement.addEventListener('ended', handleEnded);
+    videoElement.addEventListener('waiting', handleWaiting);
+    videoElement.addEventListener('canplay', handleCanPlay);
 
-    // Reset when video source changes
+    // Initialize video
+    if (videoElement.readyState >= 2) {
+      setDuration(videoElement.duration);
+      setIsLoading(false);
+    }
+
     return () => {
       videoElement.removeEventListener('play', handlePlay);
       videoElement.removeEventListener('pause', handlePause);
       videoElement.removeEventListener('loadedmetadata', handleLoadedMetadata);
       videoElement.removeEventListener('timeupdate', handleTimeUpdate);
       videoElement.removeEventListener('ended', handleEnded);
+      videoElement.removeEventListener('waiting', handleWaiting);
+      videoElement.removeEventListener('canplay', handleCanPlay);
     };
   }, [videoPath]);
 
-  // Auto-hide controls
+  // Mouse and hover handlers
+// Mouse and hover handlers
   useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleMouseEnter = () => {
+      setIsHovering(true);
+      setShowControls(true);
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      setIsHovering(false);
+      isMouseOverControlsRef.current = false;
+      
+      if (isPlayingRef.current) {
+        hideControlsTimerRef.current = setTimeout(() => {
+          setShowControls(false);
+        }, 500);
+      }
+    };
+
     const handleMouseMove = () => {
       setShowControls(true);
-      
-      if (hideControlsTimeout) {
-        clearTimeout(hideControlsTimeout);
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
       }
       
-      const timeout = setTimeout(() => {
-        if (isPlaying) {
+      if (isPlayingRef.current) {
+        hideControlsTimerRef.current = setTimeout(() => {
           setShowControls(false);
-        }
-      }, 3000);
-      
-      setHideControlsTimeout(timeout);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      if (hideControlsTimeout) {
-        clearTimeout(hideControlsTimeout);
+        }, 3000);
       }
     };
-  }, [isPlaying]);
 
-  // Keyboard shortcuts with spacebar hold functionality
+    container.addEventListener('mouseenter', handleMouseEnter);
+    container.addEventListener('mouseleave', handleMouseLeave);
+    container.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      container.removeEventListener('mouseenter', handleMouseEnter);
+      container.removeEventListener('mouseleave', handleMouseLeave);
+      container.removeEventListener('mousemove', handleMouseMove);
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Auto-hide controls when playing and not hovering
+// Auto-hide controls when playing
+  useEffect(() => {
+    if (isPlaying && !showControls) {
+      return;
+    }
+    
+    if (isPlaying && showControls) {
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
+      }
+      
+      hideControlsTimerRef.current = setTimeout(() => {
+        setShowControls(false);
+      }, 3000);
+    }
+
+    return () => {
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
+      }
+    };
+  }, [isPlaying, showControls]); // Re-run when currentTime changes (user interaction)
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (!videoRef.current) return;
+      if (!videoRef.current || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       const key = e.key.toLowerCase();
       
@@ -232,12 +321,10 @@ const VideoPlayer = ({ video = null }) => {
         case ' ':
           e.preventDefault();
           
-          // If spacebar is already being processed, ignore
           if (spacebarPressedRef.current) return;
           
           spacebarPressedRef.current = true;
           
-          // Start hold timer for 2x speed (300ms delay)
           spacebarHoldTimerRef.current = setTimeout(() => {
             if (spacebarPressedRef.current) {
               activateTempSpeed();
@@ -272,12 +359,22 @@ const VideoPlayer = ({ video = null }) => {
           
         case 'arrowup':
           e.preventDefault();
-          setVolume(prev => Math.min(1, prev + 0.1));
+          setVolume(prev => {
+            const newVol = Math.min(1, prev + 0.1);
+            if (videoRef.current) videoRef.current.volume = newVol;
+            if (newVol > 0) setIsMuted(false);
+            return newVol;
+          });
           break;
           
         case 'arrowdown':
           e.preventDefault();
-          setVolume(prev => Math.max(0, prev - 0.1));
+          setVolume(prev => {
+            const newVol = Math.max(0, prev - 0.1);
+            if (videoRef.current) videoRef.current.volume = newVol;
+            setIsMuted(newVol === 0);
+            return newVol;
+          });
           break;
           
         case '>':
@@ -313,9 +410,9 @@ const VideoPlayer = ({ video = null }) => {
         case '8':
         case '9':
           e.preventDefault();
-          if (videoRef.current) {
+          if (videoRef.current && duration) {
             const percent = parseInt(e.key) / 10;
-            videoRef.current.currentTime = videoRef.current.duration * percent;
+            videoRef.current.currentTime = duration * percent;
           }
           break;
       }
@@ -327,18 +424,14 @@ const VideoPlayer = ({ video = null }) => {
       if (key === ' ') {
         e.preventDefault();
         
-        // Clear the hold timer
         if (spacebarHoldTimerRef.current) {
           clearTimeout(spacebarHoldTimerRef.current);
           spacebarHoldTimerRef.current = null;
         }
         
-        // If we were in temp speed mode, deactivate it
         if (tempSpeedActive) {
           deactivateTempSpeed();
         } else if (spacebarPressedRef.current) {
-          // If it was just a tap (not hold), toggle play/pause
-          // Only toggle if the key wasn't held for speed boost
           togglePlay();
         }
         
@@ -353,20 +446,23 @@ const VideoPlayer = ({ video = null }) => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
       
-      // Clean up timers
       if (spacebarHoldTimerRef.current) {
         clearTimeout(spacebarHoldTimerRef.current);
-        spacebarHoldTimerRef.current = null;
-      }
-      
-      if (hideControlsTimeout) {
-        clearTimeout(hideControlsTimeout);
       }
     };
-  }, [
-    togglePlay, skip, toggleMute, changePlaybackRate, 
-    playbackRate, tempSpeedActive, activateTempSpeed, deactivateTempSpeed
-  ]);
+  }, [togglePlay, skip, toggleMute, changePlaybackRate, playbackRate, tempSpeedActive, activateTempSpeed, deactivateTempSpeed, duration]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   // Clean up on unmount
   useEffect(() => {
@@ -374,19 +470,31 @@ const VideoPlayer = ({ video = null }) => {
       if (spacebarHoldTimerRef.current) {
         clearTimeout(spacebarHoldTimerRef.current);
       }
-      if (hideControlsTimeout) {
-        clearTimeout(hideControlsTimeout);
+      if (hideControlsTimerRef.current) {
+        clearTimeout(hideControlsTimerRef.current);
       }
     };
   }, []);
 
+  // Loading indicator component
+  const LoadingSpinner = () => (
+    <div className="loading-spinner">
+      <div className="spinner"></div>
+    </div>
+  );
+
   return (
     <div 
-      ref={playerRef}
+      ref={containerRef}
       className={`video-player-container ${isFullscreen ? 'fullscreen' : ''}`}
       onDoubleClick={toggleFullscreen}
     >
-      <div className="video-wrapper">
+      <div 
+        ref={playerRef}
+        className="video-wrapper"
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+      >
         <video
           ref={videoRef}
           className="video-element"
@@ -397,14 +505,20 @@ const VideoPlayer = ({ video = null }) => {
           Your browser does not support the video tag.
         </video>
 
+        {isLoading && <LoadingSpinner />}
+
         {/* Overlay Controls */}
-        <div className={`video-overlay ${showControls ? 'show' : 'hide'}`}>
+        <div 
+          className={`video-overlay ${showControls ? 'show' : 'hide'} ${tempSpeedActive ? 'temp-speed-active' : ''}`}
+          onMouseEnter={() => isMouseOverControlsRef.current = true}
+          onMouseLeave={() => isMouseOverControlsRef.current = false}
+        >
           <div className="top-controls">
             <div className="video-title">
               <h3>{videoTitle}</h3>
               {tempSpeedActive && (
                 <div className="speed-indicator">
-                  <Zap size={16} />
+                  <Zap size={14} />
                   <span>2x Speed (Hold Space)</span>
                 </div>
               )}
@@ -412,8 +526,11 @@ const VideoPlayer = ({ video = null }) => {
           </div>
 
           <div className="center-controls">
-            <button className="big-play-button" onClick={togglePlay}>
-              {isPlaying ? <Pause size={48} /> : <Play size={48} />}
+            <button 
+              className={`big-play-button ${isPlaying ? 'playing' : ''}`} 
+              onClick={togglePlay}
+            >
+              {isPlaying ? <Pause size={42} /> : <Play size={42} />}
             </button>
           </div>
 
@@ -428,7 +545,7 @@ const VideoPlayer = ({ video = null }) => {
                 value={currentTime}
                 onChange={handleSeek}
                 style={{
-                  background: `linear-gradient(to right, #ff0000 ${(currentTime / duration) * 100}%, #606060 ${(currentTime / duration) * 100}%)`
+                  background: `linear-gradient(to right, #ff0000 ${(currentTime / (duration || 1)) * 100}%, rgba(255, 255, 255, 0.3) ${(currentTime / (duration || 1)) * 100}%)`
                 }}
               />
               <div className="time-display">
@@ -442,30 +559,39 @@ const VideoPlayer = ({ video = null }) => {
             <div className="control-buttons">
               <div className="left-controls">
                 <button className="control-button" onClick={togglePlay}>
-                  {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                  {isPlaying ? <Pause size={22} /> : <Play size={22} />}
                 </button>
                 
-                <button className="control-button" onClick={() => skip(-10)}>
-                  <SkipBack size={20} />
+                <button className="control-button skip-button" onClick={() => skip(-10)}>
+                  <SkipBack size={22} />
+                  <span className="skip-time">10s</span>
                 </button>
                 
-                <button className="control-button" onClick={() => skip(10)}>
-                  <SkipForward size={20} />
+                <button className="control-button skip-button" onClick={() => skip(10)}>
+                  <SkipForward size={22} />
+                  <span className="skip-time">10s</span>
                 </button>
 
-                <div className="volume-control">
+                <div 
+                  className="volume-control" 
+                  onMouseEnter={() => setShowVolumeSlider(true)}
+                  onMouseLeave={() => setShowVolumeSlider(false)}
+                >
                   <button className="control-button" onClick={toggleMute}>
-                    {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                    {isMuted ? <VolumeX size={22} /> : <Volume2 size={22} />}
                   </button>
-                  <input
-                    type="range"
-                    min="0"
-                    max="1"
-                    step="0.1"
-                    value={volume}
-                    onChange={handleVolumeChange}
-                    className="volume-slider"
-                  />
+                  <div className={`volume-slider-container ${showVolumeSlider || isHovering ? 'show' : ''}`}>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={volume}
+                      onChange={handleVolumeChange}
+                      className="volume-slider"
+                    />
+                    <div className="volume-percent">{Math.round(volume * 100)}%</div>
+                  </div>
                 </div>
 
                 <div className="time-display-mobile">
@@ -491,19 +617,19 @@ const VideoPlayer = ({ video = null }) => {
                   </select>
                 </div>
 
-                <button className="control-button">
+                <button className="control-button" title="Subtitles">
                   <Captions size={20} />
                 </button>
 
-                <button className="control-button">
+                <button className="control-button" title="Settings">
                   <Settings size={20} />
                 </button>
 
-                <button className="control-button">
+                <button className="control-button" title="AirPlay">
                   <Airplay size={20} />
                 </button>
 
-                <button className="control-button" onClick={toggleFullscreen}>
+                <button className="control-button" onClick={toggleFullscreen} title="Fullscreen">
                   {isFullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
                 </button>
               </div>
@@ -514,13 +640,13 @@ const VideoPlayer = ({ video = null }) => {
         {/* Playback speed indicator */}
         {(playbackRate !== 1 || tempSpeedActive) && (
           <div className="playback-rate-indicator">
-            {tempSpeedActive ? '2.0x' : `${playbackRate}x`}
+            {tempSpeedActive ? '2.0x' : `${playbackRate.toFixed(2)}x`}
             {tempSpeedActive && <Zap size={12} />}
           </div>
         )}
         
-        {/* Spacebar hint */}
-        {!isPlaying && !tempSpeedActive && (
+        {/* Spacebar hint - only show when video is paused and controls are visible */}
+        {!isPlaying && showControls && !tempSpeedActive && (
           <div className="spacebar-hint">
             <kbd>Space</kbd> or <kbd>K</kbd> to play • Hold <kbd>Space</kbd> for 2x speed
           </div>
@@ -536,16 +662,18 @@ const VideoPlayer = ({ video = null }) => {
 
       {/* Video Info */}
       <div className="video-info">
-        <h1>{videoTitle}</h1>
-        <div className="video-metadata">
-          <span className="views">{videoViews} views</span>
-          <span className="separator">•</span>
-          <span className="date">{videoUploadDate}</span>
+        <div className="video-info-header">
+          <h1>{videoTitle}</h1>
+          <div className="video-metadata">
+            <span className="views">{videoViews} views</span>
+            <span className="separator">•</span>
+            <span className="date">{videoUploadDate}</span>
+          </div>
         </div>
         
         <div className="video-actions">
           <button className="action-button like">
-            <ThumbsUp size={18} /> 234K
+            <ThumbsUp size={18} /> <span className="count">234K</span>
           </button>
           <button className="action-button dislike">
             <ThumbsDown size={18} /> Dislike
@@ -554,7 +682,10 @@ const VideoPlayer = ({ video = null }) => {
             <Share2 size={18} /> Share
           </button>
           <button className="action-button save">
-            <PlusCircle size={18} /> Save
+            <Heart size={18} /> Save
+          </button>
+          <button className="action-button download">
+            <Download size={18} /> Download
           </button>
           <button className="action-button more">
             <MoreHorizontal size={18} />
