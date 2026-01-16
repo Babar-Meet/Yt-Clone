@@ -1,11 +1,11 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout/Layout';
-import Home from './pages/Home';
-import MyLibrary from './pages/MyLibrary';
-import Downloader from './pages/Downloader';
-import ManualVideoAdd from './pages/ManualVideoAdd';
-import Watch from './pages/Watch';
+import Home from './components/Home/Home';
+import MyLibrary from './components/MyLibrary/MyLibrary';
+import Downloader from './components/Downloader/Downloader';
+import ManualVideoAdd from './components/ManualVideoAdd/ManualVideoAdd';
+import Watch from './components/Watch/Watch';
 
 function App() {
   return (

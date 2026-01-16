@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
-import videoService from '../services/videoService';
+import VideoPlayer from '../VideoPlayer/VideoPlayer';
+import videoService from '../../services/videoService';
 import { 
   Video, Play, Clock, Eye, RefreshCw, 
   TrendingUp, Clock as ClockIcon, ThumbsUp

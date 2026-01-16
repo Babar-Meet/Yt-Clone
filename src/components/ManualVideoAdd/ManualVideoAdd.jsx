@@ -7,7 +7,7 @@ import {
   Upload, Trash2, Eye, Download, FileUp, CheckCircle,
   Database, BarChart3, Copy, ExternalLink
 } from 'lucide-react';
-import videoService from '../services/videoService';
+import videoService from '../../services/videoService';
 import './ManualVideoAdd.css';
 
 const ManualVideoAdd = () => {

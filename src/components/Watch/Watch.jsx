@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import VideoPlayer from '../components/VideoPlayer/VideoPlayer';
-import videoService from '../services/videoService';
+import VideoPlayer from '../VideoPlayer/VideoPlayer';
+import videoService from '../../services/videoService';
 import { 
   ArrowLeft, Home, Clock, Eye, ThumbsUp, ThumbsDown,
   Share2, Download, PlusCircle, MoreHorizontal,

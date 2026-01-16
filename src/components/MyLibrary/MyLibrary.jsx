@@ -11,7 +11,7 @@ import {
   CheckCircle, AlertTriangle, Info
 } from 'lucide-react';
 import clsx from 'clsx';
-import videoService from '../services/videoService';
+import videoService from '../../services/videoService';
 import './MyLibrary.css';
 
 const MyLibrary = () => {
