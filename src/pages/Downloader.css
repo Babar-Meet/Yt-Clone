@@ -1,0 +1,179 @@
+.downloader-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.downloader-header {
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.downloader-header h1 {
+  font-size: 36px;
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.downloader-header p {
+  color: #aaa;
+  font-size: 18px;
+}
+
+.download-form {
+  background: #181818;
+  border-radius: 12px;
+  padding: 30px;
+  margin-bottom: 30px;
+  border: 1px solid #303030;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 10px;
+  color: white;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #303030;
+  border-radius: 8px;
+  background: #121212;
+  color: white;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #ff0000;
+  box-shadow: 0 0 0 2px rgba(255, 0, 0, 0.2);
+}
+
+.download-btn {
+  width: 100%;
+  padding: 16px;
+  background: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: #cc0000;
+  transform: translateY(-2px);
+}
+
+.download-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.download-progress {
+  margin-top: 25px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 10px;
+  background: #303030;
+  border-radius: 5px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #ff0000, #ff6b6b);
+  border-radius: 5px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: block;
+  text-align: center;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.yt-dlp-info {
+  margin-top: 40px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border-left: 4px solid #ff0000;
+}
+
+.yt-dlp-info h3 {
+  margin: 0 0 15px 0;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.yt-dlp-info p {
+  color: #aaa;
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.features span {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  color: white;
+}
+
+.example-urls {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #303030;
+}
+
+.example-urls h3 {
+  margin: 0 0 15px 0;
+  color: white;
+}
+
+.example-urls ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.example-urls li {
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-family: monospace;
+  color: #aaa;
+  font-size: 14px;
+  word-break: break-all;
+}
