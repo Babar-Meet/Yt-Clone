@@ -8,12 +8,17 @@ const Layout = () => {
   return (
     <div className="layout">
       <header className="app-header">
-        <div className="logo">
-          <Link to="/">
-            <span className="logo-icon">▶</span>
-            <span className="logo-text">YouTube Clone</span>
-          </Link>
-        </div>
+<div className="logo">
+  <Link to="/">
+    <img 
+      src="/ytlogo.png" 
+      alt="YouTube Clone Logo" 
+      className="logo-img"
+    />
+    <span className="logo-text">Meet YouTube</span>
+  </Link>
+</div>
+
         
         <div className="header-controls">
           <input 
